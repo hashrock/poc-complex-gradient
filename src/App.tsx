@@ -21,13 +21,14 @@ function App() {
   const [angle, setAngle] = useState(90)
   const [colorStops, setColorStops] = useState<ColorStop[]>([
     { id: '1', color: '#667eea', offset: 0 },
-    { id: '2', color: '#764ba2', offset: 100 }
+    { id: '2', color: '#764ba2', offset: 50 },
+    { id: '3', color: '#f093fb', offset: 100 }
   ])
   const [noise, setNoise] = useState<NoiseSettings>({
     enabled: false,
-    baseFrequency: 0.02,
-    numOctaves: 3,
-    scale: 20
+    baseFrequency: 0.005,
+    numOctaves: 1,
+    scale: 500
   })
   const [copied, setCopied] = useState(false)
 
@@ -231,12 +232,12 @@ ${filterCSS}}
             {noise.enabled && (
               <div className="noise-controls">
                 <div className="control-row">
-                  <label>Base Frequency: {noise.baseFrequency.toFixed(3)}</label>
+                  <label>Base Frequency: {noise.baseFrequency.toFixed(4)}</label>
                   <input
                     type="range"
-                    min="0.001"
-                    max="0.1"
-                    step="0.001"
+                    min="0.000"
+                    max="0.01"
+                    step="0.0001"
                     value={noise.baseFrequency}
                     onChange={(e) => setNoise({ ...noise, baseFrequency: Number(e.target.value) })}
                   />
@@ -247,7 +248,7 @@ ${filterCSS}}
                   <input
                     type="range"
                     min="1"
-                    max="8"
+                    max="2"
                     step="1"
                     value={noise.numOctaves}
                     onChange={(e) => setNoise({ ...noise, numOctaves: Number(e.target.value) })}
@@ -258,9 +259,9 @@ ${filterCSS}}
                   <label>Displacement Scale: {noise.scale}</label>
                   <input
                     type="range"
-                    min="0"
-                    max="100"
-                    step="1"
+                    min="100"
+                    max="2000"
+                    step="10"
                     value={noise.scale}
                     onChange={(e) => setNoise({ ...noise, scale: Number(e.target.value) })}
                   />
