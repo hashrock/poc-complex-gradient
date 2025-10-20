@@ -170,13 +170,15 @@ ${filterCSS}}
       <div className="container">
         <div className="preview-section">
           <h2>Preview</h2>
-          <div
-            className="preview"
-            style={{
-              background: cssGradient,
-              ...getFilterStyle()
-            }}
-          />
+          <div className="preview">
+            <div
+              className="preview-inner"
+              style={{
+                background: cssGradient,
+                ...getFilterStyle()
+              }}
+            />
+          </div>
         </div>
 
         <div className="controls-section">
