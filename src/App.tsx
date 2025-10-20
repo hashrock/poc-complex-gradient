@@ -152,7 +152,6 @@ ${filterCSS}}
   }
 
   const cssGradient = generateCSS()
-  const code = generateCode()
 
   return (
     <div className="app">
@@ -160,25 +159,15 @@ ${filterCSS}}
         <div dangerouslySetInnerHTML={{ __html: generateSVGFilter() }} />
       )}
 
-      <header>
-        <h1>CSS Gradient Generator</h1>
-        <p>Create beautiful gradient backgrounds for your projects</p>
-      </header>
+      <div
+        className="preview"
+        style={{
+          ['--gradient-bg' as string]: cssGradient,
+          ['--filter-value' as string]: noise.enabled ? 'url(#distortion-filter)' : 'none'
+        } as React.CSSProperties}
+      />
 
-      <div className="container">
-        <div className="preview-section">
-          <h2>Preview</h2>
-          <div
-            className="preview"
-            style={{
-              ['--gradient-bg' as string]: cssGradient,
-              ['--filter-value' as string]: noise.enabled ? 'url(#distortion-filter)' : 'none'
-            } as React.CSSProperties}
-          />
-        </div>
-
-        <div className="controls-section">
-          <h2>Controls</h2>
+      <div className="controls-section">
 
           <div className="control-group">
             <label>Gradient Type</label>
@@ -231,7 +220,7 @@ ${filterCSS}}
                   <input
                     type="range"
                     min="0.000"
-                    max="0.01"
+                    max="0.003"
                     step="0.0001"
                     value={noise.baseFrequency}
                     onChange={(e) => setNoise({ ...noise, baseFrequency: Number(e.target.value) })}
@@ -308,12 +297,6 @@ ${filterCSS}}
               Download HTML
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="code-section">
-        <h2>HTML & CSS Code</h2>
-        <pre><code>{code}</code></pre>
       </div>
     </div>
   )
