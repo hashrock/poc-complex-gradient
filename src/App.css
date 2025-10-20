@@ -90,12 +90,15 @@ h2 {
   position: relative;
 }
 
-.preview-inner {
+.preview::before {
+  content: '';
   position: absolute;
   top: -150%;
   left: -150%;
   width: 400%;
   height: 400%;
+  background: var(--gradient-bg);
+  filter: var(--filter-value);
 }
 
 .control-group {

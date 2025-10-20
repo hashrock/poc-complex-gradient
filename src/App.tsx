@@ -89,13 +89,6 @@ function App() {
 </svg>`
   }
 
-  const getFilterStyle = () => {
-    if (!noise.enabled) return {}
-    return {
-      filter: 'url(#distortion-filter)'
-    }
-  }
-
   const generateCode = () => {
     const css = generateCSS()
     const filterCSS = noise.enabled ? `  filter: url(#distortion-filter);\n` : ''
@@ -171,15 +164,13 @@ ${filterCSS}}
       <div className="container">
         <div className="preview-section">
           <h2>Preview</h2>
-          <div className="preview">
-            <div
-              className="preview-inner"
-              style={{
-                background: cssGradient,
-                ...getFilterStyle()
-              }}
-            />
-          </div>
+          <div
+            className="preview"
+            style={{
+              ['--gradient-bg' as string]: cssGradient,
+              ['--filter-value' as string]: noise.enabled ? 'url(#distortion-filter)' : 'none'
+            } as React.CSSProperties}
+          />
         </div>
 
         <div className="controls-section">
