@@ -334,6 +334,29 @@ input[type="range"]::-moz-range-thumb:hover {
   color: var(--text-secondary);
 }
 
+.code-display {
+  margin-top: 1rem;
+}
+
+.code-display pre {
+  background: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.code-display code {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .app {

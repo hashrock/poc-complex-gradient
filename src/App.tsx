@@ -32,7 +32,7 @@ function App() {
     scale: 500,
     seed: 0
   })
-  const [copied, setCopied] = useState(false)
+  const [showCode, setShowCode] = useState(false)
 
   const addColorStop = () => {
     const newStop: ColorStop = {
@@ -130,14 +130,8 @@ ${filterCSS}}
 </style>`
   }
 
-  const copyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(generateCode())
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
+  const toggleShowCode = () => {
+    setShowCode(!showCode)
   }
 
   const downloadHTML = () => {
@@ -290,13 +284,19 @@ ${filterCSS}}
           </div>
 
           <div className="actions">
-            <button onClick={copyCode} className="action-button primary">
-              {copied ? 'Copied!' : 'Copy Code'}
+            <button onClick={toggleShowCode} className="action-button primary">
+              {showCode ? 'Hide Code' : 'Show Code'}
             </button>
             <button onClick={downloadHTML} className="action-button">
               Download HTML
             </button>
           </div>
+
+          {showCode && (
+            <div className="code-display">
+              <pre><code>{generateCode()}</code></pre>
+            </div>
+          )}
       </div>
     </div>
   )
