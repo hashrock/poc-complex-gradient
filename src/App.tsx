@@ -9,6 +9,13 @@ interface ColorStop {
 
 type GradientType = 'linear' | 'radial'
 
+interface NoiseSettings {
+  enabled: boolean
+  baseFrequency: number
+  numOctaves: number
+  scale: number
+}
+
 function App() {
   const [gradientType, setGradientType] = useState<GradientType>('linear')
   const [angle, setAngle] = useState(90)
@@ -16,6 +23,12 @@ function App() {
     { id: '1', color: '#667eea', offset: 0 },
     { id: '2', color: '#764ba2', offset: 100 }
   ])
+  const [noise, setNoise] = useState<NoiseSettings>({
+    enabled: false,
+    baseFrequency: 0.02,
+    numOctaves: 3,
+    scale: 20
+  })
   const [copied, setCopied] = useState(false)
 
   const addColorStop = () => {
@@ -41,18 +54,83 @@ function App() {
 
   const generateSVG = () => {
     const gradientId = 'gradient-' + Date.now()
+    const filterId = 'filter-' + Date.now()
+    const turbulenceId = 'turbulence-' + Date.now()
+    const patternId = 'pattern-' + Date.now()
+
     const stops = colorStops.map(stop =>
       `<stop offset="${stop.offset}%" stop-color="${stop.color}" />`
     ).join('\n      ')
 
-    if (gradientType === 'linear') {
-      const rad = (angle - 90) * Math.PI / 180
-      const x1 = 50 + 50 * Math.cos(rad)
-      const y1 = 50 + 50 * Math.sin(rad)
-      const x2 = 50 - 50 * Math.cos(rad)
-      const y2 = 50 - 50 * Math.sin(rad)
+    if (noise.enabled) {
+      // Apply displacement to the gradient pattern itself
+      if (gradientType === 'linear') {
+        const rad = (angle - 90) * Math.PI / 180
+        const x1 = 50 + 50 * Math.cos(rad)
+        const y1 = 50 + 50 * Math.sin(rad)
+        const x2 = 50 - 50 * Math.cos(rad)
+        const y2 = 50 - 50 * Math.sin(rad)
 
-      return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="${gradientId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">
+      ${stops}
+    </linearGradient>
+    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="${noise.baseFrequency}"
+        numOctaves="${noise.numOctaves}"
+        result="turbulence" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="turbulence"
+        scale="${noise.scale}"
+        xChannelSelector="R"
+        yChannelSelector="G" />
+    </filter>
+    <pattern id="${patternId}" width="100%" height="100%" patternUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="url(#${gradientId})" filter="url(#${filterId})" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#${patternId})" />
+</svg>`
+      } else {
+        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="${gradientId}">
+      ${stops}
+    </radialGradient>
+    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="${noise.baseFrequency}"
+        numOctaves="${noise.numOctaves}"
+        result="turbulence" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="turbulence"
+        scale="${noise.scale}"
+        xChannelSelector="R"
+        yChannelSelector="G" />
+    </filter>
+    <pattern id="${patternId}" width="100%" height="100%" patternUnits="objectBoundingBox">
+      <rect width="100%" height="100%" fill="url(#${gradientId})" filter="url(#${filterId})" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#${patternId})" />
+</svg>`
+      }
+    } else {
+      // No displacement, use gradient directly
+      if (gradientType === 'linear') {
+        const rad = (angle - 90) * Math.PI / 180
+        const x1 = 50 + 50 * Math.cos(rad)
+        const y1 = 50 + 50 * Math.sin(rad)
+        const x2 = 50 - 50 * Math.cos(rad)
+        const y2 = 50 - 50 * Math.sin(rad)
+
+        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="${gradientId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">
       ${stops}
@@ -60,8 +138,8 @@ function App() {
   </defs>
   <rect width="100%" height="100%" fill="url(#${gradientId})" />
 </svg>`
-    } else {
-      return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      } else {
+        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="${gradientId}">
       ${stops}
@@ -69,6 +147,7 @@ function App() {
   </defs>
   <rect width="100%" height="100%" fill="url(#${gradientId})" />
 </svg>`
+      }
     }
   }
 
@@ -141,6 +220,60 @@ function App() {
               />
             </div>
           )}
+
+          <div className="control-group">
+            <div className="color-stops-header">
+              <label>Distortion Effects</label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={noise.enabled}
+                  onChange={(e) => setNoise({ ...noise, enabled: e.target.checked })}
+                />
+                Enable
+              </label>
+            </div>
+
+            {noise.enabled && (
+              <div className="noise-controls">
+                <div className="control-row">
+                  <label>Base Frequency: {noise.baseFrequency.toFixed(3)}</label>
+                  <input
+                    type="range"
+                    min="0.001"
+                    max="0.1"
+                    step="0.001"
+                    value={noise.baseFrequency}
+                    onChange={(e) => setNoise({ ...noise, baseFrequency: Number(e.target.value) })}
+                  />
+                </div>
+
+                <div className="control-row">
+                  <label>Octaves: {noise.numOctaves}</label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="8"
+                    step="1"
+                    value={noise.numOctaves}
+                    onChange={(e) => setNoise({ ...noise, numOctaves: Number(e.target.value) })}
+                  />
+                </div>
+
+                <div className="control-row">
+                  <label>Displacement Scale: {noise.scale}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={noise.scale}
+                    onChange={(e) => setNoise({ ...noise, scale: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="control-group">
             <div className="color-stops-header">
