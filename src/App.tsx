@@ -14,21 +14,23 @@ interface NoiseSettings {
   baseFrequency: number
   numOctaves: number
   scale: number
+  seed: number
 }
 
 function App() {
   const [gradientType, setGradientType] = useState<GradientType>('linear')
   const [angle, setAngle] = useState(90)
   const [colorStops, setColorStops] = useState<ColorStop[]>([
-    { id: '1', color: '#667eea', offset: 0 },
+    { id: '1', color: '#667eea', offset: 30 },
     { id: '2', color: '#764ba2', offset: 50 },
-    { id: '3', color: '#f093fb', offset: 100 }
+    { id: '3', color: '#f093fb', offset: 70 }
   ])
   const [noise, setNoise] = useState<NoiseSettings>({
-    enabled: false,
+    enabled: true,
     baseFrequency: 0.005,
     numOctaves: 1,
-    scale: 500
+    scale: 500,
+    seed: 0
   })
   const [copied, setCopied] = useState(false)
 
@@ -77,6 +79,7 @@ function App() {
         type="fractalNoise"
         baseFrequency="${noise.baseFrequency}"
         numOctaves="${noise.numOctaves}"
+        seed="${noise.seed}"
         result="turbulence" />
       <feDisplacementMap
         in="SourceGraphic"
@@ -101,6 +104,7 @@ function App() {
         type="fractalNoise"
         baseFrequency="${noise.baseFrequency}"
         numOctaves="${noise.numOctaves}"
+        seed="${noise.seed}"
         result="turbulence" />
       <feDisplacementMap
         in="SourceGraphic"
@@ -235,18 +239,6 @@ ${filterCSS}}
                 </div>
 
                 <div className="control-row">
-                  <label>Octaves: {noise.numOctaves}</label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="2"
-                    step="1"
-                    value={noise.numOctaves}
-                    onChange={(e) => setNoise({ ...noise, numOctaves: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="control-row">
                   <label>Displacement Scale: {noise.scale}</label>
                   <input
                     type="range"
@@ -255,6 +247,18 @@ ${filterCSS}}
                     step="10"
                     value={noise.scale}
                     onChange={(e) => setNoise({ ...noise, scale: Number(e.target.value) })}
+                  />
+                </div>
+
+                <div className="control-row">
+                  <label>Seed: {noise.seed}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000"
+                    step="1"
+                    value={noise.seed}
+                    onChange={(e) => setNoise({ ...noise, seed: Number(e.target.value) })}
                   />
                 </div>
               </div>
