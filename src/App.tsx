@@ -125,6 +125,19 @@ function App() {
 .gradient-background {
   width: 100%;
   height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.gradient-background::before {
+  content: '';
+  position: absolute;
+  top: -150%;
+  left: -150%;
+  width: 400%;
+  height: 400%;
   background: ${css};
 ${filterCSS}}
 </style>`
@@ -197,14 +210,12 @@ ${filterCSS}}
           <div className="control-group">
             <div className="color-stops-header">
               <label>Distortion Effects</label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={noise.enabled}
-                  onChange={(e) => setNoise({ ...noise, enabled: e.target.checked })}
-                />
-                Enable
-              </label>
+              <button
+                className={`toggle-button ${noise.enabled ? 'active' : ''}`}
+                onClick={() => setNoise({ ...noise, enabled: !noise.enabled })}
+              >
+                {noise.enabled ? 'ON' : 'OFF'}
+              </button>
             </div>
 
             {noise.enabled && (
