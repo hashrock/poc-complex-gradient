@@ -52,108 +52,89 @@ function App() {
     ).sort((a, b) => a.offset - b.offset))
   }
 
-  const generateSVG = () => {
-    const gradientId = 'gradient-' + Date.now()
-    const filterId = 'filter-' + Date.now()
-    const turbulenceId = 'turbulence-' + Date.now()
-    const patternId = 'pattern-' + Date.now()
+  const generateCSS = () => {
+    const sortedStops = [...colorStops].sort((a, b) => a.offset - b.offset)
+    const stopsStr = sortedStops.map(stop =>
+      `${stop.color} ${stop.offset}%`
+    ).join(', ')
 
-    const stops = colorStops.map(stop =>
-      `<stop offset="${stop.offset}%" stop-color="${stop.color}" />`
-    ).join('\n      ')
-
-    if (noise.enabled) {
-      // Apply displacement to the gradient pattern itself
-      if (gradientType === 'linear') {
-        const rad = (angle - 90) * Math.PI / 180
-        const x1 = 50 + 50 * Math.cos(rad)
-        const y1 = 50 + 50 * Math.sin(rad)
-        const x2 = 50 - 50 * Math.cos(rad)
-        const y2 = 50 - 50 * Math.sin(rad)
-
-        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="${gradientId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">
-      ${stops}
-    </linearGradient>
-    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
-      <feTurbulence
-        type="fractalNoise"
-        baseFrequency="${noise.baseFrequency}"
-        numOctaves="${noise.numOctaves}"
-        result="turbulence" />
-      <feDisplacementMap
-        in="SourceGraphic"
-        in2="turbulence"
-        scale="${noise.scale}"
-        xChannelSelector="R"
-        yChannelSelector="G" />
-    </filter>
-    <pattern id="${patternId}" width="100%" height="100%" patternUnits="objectBoundingBox">
-      <rect width="100%" height="100%" fill="url(#${gradientId})" filter="url(#${filterId})" />
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#${patternId})" />
-</svg>`
-      } else {
-        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="${gradientId}">
-      ${stops}
-    </radialGradient>
-    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
-      <feTurbulence
-        type="fractalNoise"
-        baseFrequency="${noise.baseFrequency}"
-        numOctaves="${noise.numOctaves}"
-        result="turbulence" />
-      <feDisplacementMap
-        in="SourceGraphic"
-        in2="turbulence"
-        scale="${noise.scale}"
-        xChannelSelector="R"
-        yChannelSelector="G" />
-    </filter>
-    <pattern id="${patternId}" width="100%" height="100%" patternUnits="objectBoundingBox">
-      <rect width="100%" height="100%" fill="url(#${gradientId})" filter="url(#${filterId})" />
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#${patternId})" />
-</svg>`
-      }
+    if (gradientType === 'linear') {
+      return `linear-gradient(${angle}deg, ${stopsStr})`
     } else {
-      // No displacement, use gradient directly
-      if (gradientType === 'linear') {
-        const rad = (angle - 90) * Math.PI / 180
-        const x1 = 50 + 50 * Math.cos(rad)
-        const y1 = 50 + 50 * Math.sin(rad)
-        const x2 = 50 - 50 * Math.cos(rad)
-        const y2 = 50 - 50 * Math.sin(rad)
-
-        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="${gradientId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">
-      ${stops}
-    </linearGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#${gradientId})" />
-</svg>`
-      } else {
-        return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="${gradientId}">
-      ${stops}
-    </radialGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#${gradientId})" />
-</svg>`
-      }
+      return `radial-gradient(circle, ${stopsStr})`
     }
   }
 
-  const copySVG = async () => {
+  const generateSVGFilter = () => {
+    if (!noise.enabled) return ''
+
+    const filterId = 'distortion-filter'
+    return `<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <filter id="${filterId}">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="${noise.baseFrequency}"
+        numOctaves="${noise.numOctaves}"
+        result="turbulence" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="turbulence"
+        scale="${noise.scale}"
+        xChannelSelector="R"
+        yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>`
+  }
+
+  const getFilterStyle = () => {
+    if (!noise.enabled) return {}
+    return {
+      filter: 'url(#distortion-filter)'
+    }
+  }
+
+  const generateCode = () => {
+    const css = generateCSS()
+    const filterCSS = noise.enabled ? `  filter: url(#distortion-filter);\n` : ''
+
+    const html = noise.enabled ? `<!-- SVG Filter Definition -->
+<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <filter id="distortion-filter">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="${noise.baseFrequency}"
+        numOctaves="${noise.numOctaves}"
+        result="turbulence" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="turbulence"
+        scale="${noise.scale}"
+        xChannelSelector="R"
+        yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
+` : ''
+
+    return `${html}<!-- Gradient Background -->
+<div class="gradient-background"></div>
+
+<style>
+.gradient-background {
+  width: 100%;
+  height: 100vh;
+  background: ${css};
+${filterCSS}}
+</style>`
+  }
+
+  const copyCode = async () => {
     try {
-      await navigator.clipboard.writeText(generateSVG())
+      await navigator.clipboard.writeText(generateCode())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -161,30 +142,41 @@ function App() {
     }
   }
 
-  const downloadSVG = () => {
-    const svg = generateSVG()
-    const blob = new Blob([svg], { type: 'image/svg+xml' })
+  const downloadHTML = () => {
+    const code = generateCode()
+    const blob = new Blob([code], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'gradient-background.svg'
+    a.download = 'gradient-background.html'
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  const svgCode = generateSVG()
+  const cssGradient = generateCSS()
+  const code = generateCode()
 
   return (
     <div className="app">
+      {noise.enabled && (
+        <div dangerouslySetInnerHTML={{ __html: generateSVGFilter() }} />
+      )}
+
       <header>
-        <h1>SVG Gradient Generator</h1>
+        <h1>CSS Gradient Generator</h1>
         <p>Create beautiful gradient backgrounds for your projects</p>
       </header>
 
       <div className="container">
         <div className="preview-section">
           <h2>Preview</h2>
-          <div className="preview" dangerouslySetInnerHTML={{ __html: svgCode }} />
+          <div
+            className="preview"
+            style={{
+              background: cssGradient,
+              ...getFilterStyle()
+            }}
+          />
         </div>
 
         <div className="controls-section">
@@ -311,19 +303,19 @@ function App() {
           </div>
 
           <div className="actions">
-            <button onClick={copySVG} className="action-button primary">
-              {copied ? 'Copied!' : 'Copy SVG Code'}
+            <button onClick={copyCode} className="action-button primary">
+              {copied ? 'Copied!' : 'Copy Code'}
             </button>
-            <button onClick={downloadSVG} className="action-button">
-              Download SVG
+            <button onClick={downloadHTML} className="action-button">
+              Download HTML
             </button>
           </div>
         </div>
       </div>
 
       <div className="code-section">
-        <h2>SVG Code</h2>
-        <pre><code>{svgCode}</code></pre>
+        <h2>HTML & CSS Code</h2>
+        <pre><code>{code}</code></pre>
       </div>
     </div>
   )
